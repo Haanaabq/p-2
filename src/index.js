@@ -1,14 +1,7 @@
-function formatDate(date) {
-    let hours = date.getHours();
-    if (hours < 10) {
-        hours = `0${hours}`;
-    }
-    let minutes = date.getMinutes();
-    if (minutes < 10) {
-        minutes = `0${minutes}`;
-    }
-
-    let dayIndex = date.getDay();
+function formatDate(timestamp) {
+    let dt = new Date(timestamp);
+    let hours = dt.getHours();
+    let minutes = dt.getMinutes();
     let days = [
         "Sunday",
         "Monday",
@@ -16,71 +9,69 @@ function formatDate(date) {
         "Wednesday",
         "Thursday",
         "Friday",
-        "Saturday"
+        "Saturday",
     ];
-    let day = days[dayIndex];
-
+    let day = days[dt.getDay()];
     return `${day} ${hours}:${minutes}`;
+
+}
+function displayTemperature(response) {
+    let temp = document.querySelector("#temperature");
+    let city = document.querySelector("#city");
+    let description = document.querySelector("#description");
+    let humidity = document.querySelector("#humidity");
+    let wind = document.querySelector("#wind");
+    let date = document.querySelector("#date");
+    let icon = document.querySelector("#icon");
+    cili = Math.round(response.data.main.temp);
+
+    temp.innerHTML = Math.round(cili);
+    city.innerHTML = response.data.name;
+    description.innerHTML = response.data.weather[0].description;
+    humidity.innerHTML = response.data.main.humidity;
+    wind.innerHTML = response.data.wind.speed;
+    date.innerHTML = formatDate(response.data.dt * 1000);
+    icon.setAttribute("src", `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png`);
 }
 
-function displayWeatherCondition(response) {
-    document.querySelector("#city").innerHTML = response.data.name;
-    document.querySelector("#temperature").innerHTML = Math.round(
-        response.data.main.temp
-    );
+function search(city) {
 
-    document.querySelector("#humidity").innerHTML = response.data.main.humidity;
-    document.querySelector("#wind").innerHTML = Math.round(
-        response.data.wind.speed
-    );
-    document.querySelector("#description").innerHTML =
-        response.data.weather[0].main;
+
+    let apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=72bb9dab46b9ec3d65f423c63f27a9b8`;
+    axios.get(apiUrl).then(displayTemperature);
+
 }
 
-function searchCity(city) {
-    let apiKey = "cabdbda40038ba7d1165b953b1c7bd6c";
-    let apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-    axios.get(apiUrl).then(displayWeatherCondition);
-}
-
-function handleSubmit(event) {
+function handdle(event) {
     event.preventDefault();
-    let city = document.querySelector("#city-input").value;
-    searchCity(city);
+    let cityinput = document.querySelector("#city-input");
+    search(cityinput.value);
+
 }
-
-function searchLocation(position) {
-    let apiKey = "cabdbda40038ba7d1165b953b1c7bd6c";
-    let apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${position.coords.latitude}&lon=${position.coords.longitude}&appid=${apiKey}&units=metric`;
-
-    axios.get(apiUrl).then(displayWeatherCondition);
-}
-
-function getCurrentLocation(event) {
+function turnfaren(event) {
     event.preventDefault();
-    navigator.geolocation.getCurrentPosition(searchLocation);
+    let temp1 = document.querySelector("#temperature");
+    sili.classList.remove("active");
+    faren.classList.add("active");
+    let farentemp = cili * 9 / 5 + 32;
+    temp1.innerHTML = Math.round(farentemp);
 }
-
-function convertToFahrenheit(event) {
+let cili = null;
+function turnsili(event) {
     event.preventDefault();
-    let temperatureElement = document.querySelector("#temperature");
-    temperatureElement.innerHTML = 66;
+    let temp2 = document.querySelector("#temperature");
+    sili.classList.add("active");
+    faren.classList.remove("active");
+    temp2.innerHTML = cili;
 }
+search("sydney");
+let form = document.querySelector("#search-form");
+form.addEventListener("submit", handdle);
 
-function convertToCelsius(event) {
-    event.preventDefault();
-    let temperatureElement = document.querySelector("#temperature");
-    temperatureElement.innerHTML = 19;
-}
+let faren = document.querySelector("#fahrenheit-link");
+faren.addEventListener("click", turnfaren);
+let sili = document.querySelector("#celsius-link");
+sili.addEventListener("click", turnsili);
 
-let dateElement = document.querySelector("#date");
-let currentTime = new Date();
-dateElement.innerHTML = formatDate(currentTime);
 
-let searchForm = document.querySelector("#search-form");
-searchForm.addEventListener("submit", handleSubmit);
 
-let currentLocationButton = document.querySelector("#current-location-button");
-currentLocationButton.addEventListener("click", getCurrentLocation);
-
-searchCity("New York");
