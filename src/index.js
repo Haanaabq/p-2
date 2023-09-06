@@ -15,6 +15,48 @@ function formatDate(timestamp) {
     return `${day} ${hours}:${minutes}`;
 
 }
+
+function formatdays(timestep) {
+    let date = new Date(timestep * 1000);
+    let day = date.getDay();
+    let days = [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thur",
+        "Fri",
+        "Sat",
+    ];
+    return days[day];
+}
+function displayForecast(response) {
+    let daysdata = response.data.daily;
+    let forecast = document.querySelector("#weather-forecast");
+    let forecasthtml = `<div class="row">`;
+
+    daysdata.forEach(function (forecastday, index) {
+        if (index < 6) {
+            forecasthtml = forecasthtml + `
+                        <div class="col-2">
+                            <div class="weather-forecast-date">${formatdays(forecastday.dt)}</div>
+                            <img src="http://openweathermap.org/img/wn/${forecastday.weather[0].icon}@2x.png" alt="" width="42" />
+                            <div class="weather-forecast-temperatures">
+                                <span class="weather-forecast-temperature-max"> ${Math.round(forecastday.temp.max)}° </span>
+                                <span class="weather-forecast-temperature-min"> ${Math.round(forecastday.temp.min)}° </span>
+                            </div>        
+                    </div>`;
+        }
+    })
+
+
+    forecasthtml = forecasthtml + `</div >`;
+    forecast.innerHTML = forecasthtml;
+}
+function getforecast(coordinate) {
+    let api = `https://api.openweathermap.org/data/2.5/onecall?lat=${coordinate.lat}&lon=${coordinate.lon}&units=metric&appid=72bb9dab46b9ec3d65f423c63f27a9b8`
+    axios.get(api).then(displayForecast);
+}
 function displayTemperature(response) {
     let temp = document.querySelector("#temperature");
     let city = document.querySelector("#city");
@@ -31,6 +73,7 @@ function displayTemperature(response) {
     humidity.innerHTML = response.data.main.humidity;
     wind.innerHTML = response.data.wind.speed;
     date.innerHTML = formatDate(response.data.dt * 1000);
+    getforecast(response.data.coord);
     icon.setAttribute("src", `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png`);
 }
 
@@ -75,3 +118,4 @@ sili.addEventListener("click", turnsili);
 
 
 
+displayForecast();
